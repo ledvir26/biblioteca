@@ -6,5 +6,5 @@ class PrestamoForm(forms.ModelForm):
 
     class Meta:
         model = Prestamo
-        fields = ('lector','libro')
-        
+        fields = ('lector','libro',)
+
