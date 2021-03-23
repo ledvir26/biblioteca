@@ -1,10 +1,12 @@
 from django.db import models
+from django.db.models.signals import post_delete
 
 # from local apps
 from applications.libro.models import Libro
 from applications.autor.models import Persona
 # From Managers
 from .managers import PrestamoManager
+from .signals import update_libro_stok
 
 class Lector(Persona):
     class Meta:
@@ -19,6 +21,18 @@ class Prestamo(models.Model):
     devuelto = models.BooleanField()
     objects = PrestamoManager()
 
+    def save(self, *args, **kwargs):
+
+        self.libro.stok = self.libro.stok - 1
+        self.libro.save()
+        super(Prestamo, self).save(*args, **kwargs)
+
     def __str__(self):
         return self.libro.titulo
-    
+
+#def update_libro_stok(sender, instance, **kwargs):
+    #actualizaremos el stok si se elimina un 
+ #   instance.libro.stok = instance.libro.stok + 1
+  #  instance.libro.save()
+
+post_delete.connect(update_libro_stok, sender=Prestamo)

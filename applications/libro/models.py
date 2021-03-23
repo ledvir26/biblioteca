@@ -1,4 +1,8 @@
 from django.db import models
+from django.db.models.signals import post_save
+
+# apps terceros
+from PIL import Image
 
 # from local apps
 from applications.autor.models import Autor
@@ -20,6 +24,7 @@ class Libro(models.Model):
     fecha = models.DateField("Fecha de Lanzamiento")
     portada = models.ImageField(upload_to='portada', blank=True)
     visitas = models.PositiveIntegerField()
+    stok = models.PositiveIntegerField(default=0)
     objects = LibroManager()
 
     class Meta:
@@ -30,3 +35,11 @@ class Libro(models.Model):
     def __str__(self):
         return str(self.id) + '-' + self.titulo
 
+def optimize_image(sender, instance, **kwargs):
+    print("-------")
+    if instance.portada:
+        portada = Image.open(instance.portada.path)
+        portada.save(instance.portada.path, quality=20, optimize=True)
+
+
+post_save.connect(optimize_image, sender=Libro)
